@@ -101,6 +101,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         // Load datasource providers from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
+
             // Sort - parse providers with parent in the end
             Arrays.sort(extElements, (o1, o2) -> {
                 String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
@@ -114,6 +115,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE:
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
+                        log.info("ext" + ext);
+                        log.info("provider" + provider);
                         dataSourceProviders.add(provider);
                         break;
                 }

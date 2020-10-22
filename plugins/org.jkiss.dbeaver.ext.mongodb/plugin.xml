@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- mongodb -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.mongodb.MongodbDataSourceProvider"
+                description="%datasource.mo.description"
+                id="mongodb"
+                parent="generic"
+                label="Mongodb"
+                icon="icons/mongodb.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="mongo-db"
+                        label="Mongodb"
+                        class="org.mongodb.jdbc.MongoDriver"
+                        icon="icons/mongodb.png"
+                        iconBig="icons/mongodb.png"
+                        sampleURL="jdbc:mongo://{host}:{port}/"
+                        defaultPort="27017"
+                        description="Mongo db Driver"
+                        webURL="https:https://docs.mongodb.com/datalake/tutorial/jdbc-driver"
+                        categories="nosql">
+                    categories="nosql">
+                    <file type="jar" path="maven:/org.mongodb:mongodb-java-driver:3.8.0" bundle="!drivers.mongodb"/>
+                    <file type="license" path="drivers/mongodb/LICENSE.txt" bundle="drivers.mongodb"/>
+                    <file type="jar" path="drivers/mongodb" bundle="drivers.mongodb"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="mongo-db-maven-repo" name="Mongodb Repository" url="https://artifacts.mongodb.co/maven" order="20">
+            <scope group="org.mongodb.plugin"/>
+        </repository>
+
+    </extension>
+
+</plugin>

@@ -61,6 +61,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 
     public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
         super(monitor, table, dbResult);
+        log.debug("postgre table column :" + table + " " + dbResult);
     }
 
     @Override

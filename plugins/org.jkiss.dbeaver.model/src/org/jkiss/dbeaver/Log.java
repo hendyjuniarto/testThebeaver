@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver;
 
+import jdk.internal.joptsimple.internal.Strings;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -200,8 +201,11 @@ public class Log
             if (debugWriter == null) {
                 return;
             }
-
-            debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
+            StringBuilder stringBuilder = new StringBuilder(sdf.format(new Date()));
+            stringBuilder.append("--");
+            stringBuilder.append(name);
+            stringBuilder.append("--");
+            debugWriter.print(stringBuilder.toString());
             if (message != null) {
                 debugWriter.println(message);
             }
