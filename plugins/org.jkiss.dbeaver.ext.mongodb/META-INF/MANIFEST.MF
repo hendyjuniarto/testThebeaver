@@ -1,14 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: DBeaver Mongodb UI
+Bundle-Name: dbeaver Mongodb
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mongodb;singleton:=true
-Bundle-Version: 5.5.5.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20200831
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ext.generic
+ org.mongodb.mongo-java-driver
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
+Export-Package: org.jkiss.ext.mongodb, org.jkiss.ext.mongodb.Connection, org.jkiss.ext.mongodb.Model
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mongodb

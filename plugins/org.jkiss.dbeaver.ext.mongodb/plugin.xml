@@ -20,7 +20,7 @@
                 <driver
                         id="mongo-db"
                         label="Mongodb"
-                        class="org.mongodb.jdbc.MongoDriver"
+                        class="com.mongodb.MongoClient"
                         icon="icons/mongodb.png"
                         iconBig="icons/mongodb.png"
                         sampleURL="jdbc:mongo://{host}:{port}/"
@@ -29,9 +29,15 @@
                         webURL="https:https://docs.mongodb.com/datalake/tutorial/jdbc-driver"
                         categories="nosql">
                     categories="nosql">
-                    <file type="jar" path="maven:/org.mongodb:mongodb-java-driver:3.8.0" bundle="!drivers.mongodb"/>
+                    <file type="jar" path="maven:/org.mongodb:mongo-java-driver:3.8.0" bundle="!drivers.mongodb"/>
                     <file type="license" path="drivers/mongodb/LICENSE.txt" bundle="drivers.mongodb"/>
                     <file type="jar" path="drivers/mongodb" bundle="drivers.mongodb"/>
+
+                    <property name="readPreference" value="ReadPreference.nearest()"/>
+                    <property name="maxConnectionIdleTime" value="10000"/>
+                    <property name="connectionsPerHost" value="30"/>
+                    <property name="connectTimeout" value="10000"/>
+                    <property name="socketTimeout" value="10000"/>
                 </driver>
 
             </drivers>
@@ -39,11 +45,11 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="mongo-db-maven-repo" name="Mongodb Repository" url="https://artifacts.mongodb.co/maven" order="20">
-            <scope group="org.mongodb.plugin"/>
-        </repository>
+<!--    <extension point="org.jkiss.dbeaver.mavenRepository">-->
+<!--        <repository id="mongo-db-maven-repo" name="Mongodb Repository" url="https://artifacts.mongodb.co/maven" order="20">-->
+<!--            <scope group="org.mongodb.plugin"/>-->
+<!--        </repository>-->
 
-    </extension>
+<!--    </extension>-->
 
 </plugin>

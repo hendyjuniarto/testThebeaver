@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver;
 
-import jdk.internal.joptsimple.internal.Strings;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
