@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.mongodb.Model;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -58,7 +59,7 @@ public class MongoDataSource extends NonJDBCDataSource {
   }
 
   @Override
-  protected MongoClient openConnection(@NotNull DBRProgressMonitor monitor, @Nullable
+  protected MongoDatabase openConnection(@NotNull DBRProgressMonitor monitor, @Nullable
       NonJDBCExecutionContext context, @NotNull String purpose) throws DBCException {
     try {
       return super.openConnection(monitor, context, purpose);
@@ -68,16 +69,10 @@ public class MongoDataSource extends NonJDBCDataSource {
     }
   }
 
-//  protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull NonJDBCExecutionContext context, NonJDBCExecutionContext initFrom) throws DBException {
-//    super.initializeContextState(monitor, context, initFrom);
-//    if (initFrom != null) {
-//      MongoExecutionContext metaContext = (MongoExecutionContext)initFrom;
-//      ((MongoExecutionContext)context).initDefaultsFrom(monitor, metaContext);
-//    } else {
-//      ((MongoExecutionContext)context).refreshDefaults(monitor, true);
-//    }
-//
-//  }
+  protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull NonJDBCExecutionContext context, NonJDBCExecutionContext initFrom) throws DBException {
+//     ((MongoExecutionContext)context).refreshDefaults(monitor, true);
+  }
+
   @Override
   public void cacheStructure(DBRProgressMonitor dbrProgressMonitor, int i) throws DBException {
 

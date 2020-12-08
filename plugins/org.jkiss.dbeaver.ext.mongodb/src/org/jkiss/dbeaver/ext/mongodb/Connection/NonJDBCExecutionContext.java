@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.mongodb.Connection;
 
-import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
@@ -15,8 +16,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 
 
 public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDataSource> implements
@@ -27,8 +28,7 @@ public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDat
   static final int TXN_INFO_READ_TIMEOUT = 5000;
   @NotNull
   private volatile NonJDBCRemoteInstance instance;
-  private volatile MongoClient connection;
-  private volatile Boolean autoCommit;
+  private volatile MongoDatabase connection;
   private volatile Integer transactionIsolationLevel;
 
   public NonJDBCExecutionContext(@NotNull NonJDBCRemoteInstance instance, String purpose) {
@@ -49,11 +49,11 @@ public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDat
     this.instance = instance;
   }
   @NotNull
-  private MongoClient getConnection(){
+  private MongoDatabase getConnection(){
     return this.connection;
   }
 
-  public void connect(DBRProgressMonitor monitor)throws DBException{
+  public void connect(DBRProgressMonitor monitor)throws DBCException{
     this.connect(monitor,(Boolean)null, (Integer)null, (NonJDBCExecutionContext)null, true);
   }
 
@@ -63,13 +63,13 @@ public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDat
       log.error("Reopening not-closed connection");
       this.close();
     }
-//    ((NonJDBCDataSource)this.dataSource).getContainer().isConnectionReadOnly();
     NonJDBCRemoteInstance currentInstance = this.instance;
     DBExecUtils.startContextInitiation(dataSource.getContainer());
     Object exclusiveLock = currentInstance.getExclusiveLock().acquireExclusiveLock();
 
     try{
       this.connection = ((NonJDBCDataSource)this.dataSource).openConnection(monitor, this, this.purpose);
+      log.info("connection" + this.connection);
       monitor.subTask("Set connection defaults");
       if (this.connection == null) {
         throw new DBCException("Null connection returned");
@@ -85,16 +85,16 @@ public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDat
       currentInstance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
     }
   }
-  protected void disconnect() {
-    synchronized(this) {
-      if (this.connection != null && !((NonJDBCDataSource)this.dataSource).closeConnection(this.connection, this.purpose)) {
-        log.debug("Connection close timeout");
-      }
-      this.connection = null;
-    }
-
-    super.closeContext();
-  }
+//  protected void disconnect() {
+//    synchronized(this) {
+//      if (this.connection != null && !((NonJDBCDataSource)this.dataSource).closeConnection(this.connection, this.purpose)) {
+//        log.debug("Connection close timeout");
+//      }
+//      this.connection = null;
+//    }
+//
+//    super.closeContext();
+//  }
 
   @Override
   public boolean isConnected() {
@@ -102,10 +102,24 @@ public class NonJDBCExecutionContext extends AbstractExecutionContext<NonJDBCDat
   }
 
   @Override
-  public DBCSession openSession(DBRProgressMonitor dbrProgressMonitor,
-      DBCExecutionPurpose dbcExecutionPurpose,
-      String s) {
-    return null;
+  public MongoSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle) {
+    return ((NonJDBCDataSource)this.dataSource).createConnection(monitor, this, purpose, taskTitle);
+  }
+
+  @NotNull
+  public MongoDatabase getConnection(DBRProgressMonitor monitor) throws MongoException {
+    if (connection == null) {
+      try {
+        connect(monitor);
+      } catch (DBCException e) {
+        if (e.getCause() instanceof MongoException) {
+          throw (MongoException) e.getCause();
+        } else {
+          throw new MongoException(e.getMessage());
+        }
+      }
+    }
+    return connection;
   }
 
   @Override

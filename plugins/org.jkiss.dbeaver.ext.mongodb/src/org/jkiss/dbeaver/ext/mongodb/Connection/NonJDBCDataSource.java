@@ -6,6 +6,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -21,6 +22,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.exec.DBCConnectException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
@@ -66,7 +68,7 @@ public abstract class NonJDBCDataSource
     this.defaultRemoteInstance = new NonJDBCRemoteInstance(monitor, this, true);
   }
 
-  protected MongoClient openConnection(@NotNull DBRProgressMonitor monitor, @Nullable
+  protected MongoDatabase openConnection(@NotNull DBRProgressMonitor monitor, @Nullable
       NonJDBCExecutionContext context, @NotNull String purpose) throws DBCException {
 
     DBPDriver driver = getContainer().getDriver();
@@ -85,7 +87,7 @@ public abstract class NonJDBCDataSource
 
       final String url = getConnectionURL(connectionInfo);
       monitor.subTask("Connecting " + purpose);
-      MongoClient[] connection = new MongoClient[1];
+      MongoDatabase[] connection = new MongoDatabase[1];
       Exception[] error = new Exception[1];
       int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
       List<MongoCredential> credentials = new ArrayList<MongoCredential>();
@@ -99,8 +101,8 @@ public abstract class NonJDBCDataSource
       DBRRunnableWithProgress connectTask = monitor1 ->{
         ServerAddress serverAddress = new ServerAddress(connectionInfo.getHostName(),
             Integer.parseInt(connectionInfo.getHostPort()));
-        try {
-          connection[0] = new MongoClient(serverAddress, credentials, options);
+        try (MongoClient mongoClient = new MongoClient(serverAddress, credentials, options)){
+         connection[0] = mongoClient.getDatabase(connectionInfo.getDatabaseName());
         }catch (Exception e){
           log.debug("error:" + e);
         }
@@ -134,23 +136,23 @@ public abstract class NonJDBCDataSource
   protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull NonJDBCExecutionContext context, NonJDBCExecutionContext initFrom) throws DBException {
   }
 
-  public boolean closeConnection(MongoClient connection, String purpose){
-      if(connection!=null){
-        return RuntimeUtils.runTask((monitor) -> {
-          try {
-            connection.close();
-          } catch (Throwable var4) {
-            log.debug("Error closing connection", var4);
-          }
-
-        }, "Close NonJDBC connection (" + purpose + ")",
-            (long)this.getContainer().getPreferenceStore().getInt("connection.close.timeout"));
-
-      }else {
-        log.debug("Null connection parameter");
-        return true;
-      }
-  }
+//  public boolean closeConnection(MongoDatabase connection, String purpose){
+//      if(connection!=null){
+//        return RuntimeUtils.runTask((monitor) -> {
+//          try {
+//            connection.close();
+//          } catch (Throwable var4) {
+//            log.debug("Error closing connection", var4);
+//          }
+//
+//        }, "Close NonJDBC connection (" + purpose + ")",
+//            (long)this.getContainer().getPreferenceStore().getInt("connection.close.timeout"));
+//
+//      }else {
+//        log.debug("Null connection parameter");
+//        return true;
+//      }
+//  }
 
   protected MongoClientOptions getAllConnectionProperties(DBPConnectionConfiguration connectionInfo) throws MongoException {
 
@@ -197,6 +199,16 @@ public abstract class NonJDBCDataSource
 
   protected NonJDBCExecutionContext createExecutionContext(NonJDBCRemoteInstance instance, String type) {
     return new NonJDBCExecutionContext(instance, type);
+  }
+
+  @NotNull
+  protected MongoConnectionImpl createConnection(
+      @NotNull DBRProgressMonitor monitor,
+      @NotNull NonJDBCExecutionContext context,
+      @NotNull DBCExecutionPurpose purpose,
+      @NotNull String taskTitle)
+  {
+    return new MongoConnectionImpl(context, monitor, purpose, taskTitle);
   }
 
   @NotNull
